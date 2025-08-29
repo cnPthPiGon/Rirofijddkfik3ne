@@ -53,9 +53,7 @@ input[type="text"]:focus {
   animation: blink 1s infinite;
 }
 
-.hidden {
-  display: none;
-}
+.hidden { display: none; }
 
 .highlight {
   font-weight: bold;
@@ -88,13 +86,7 @@ input[type="text"]:focus {
 }
 
 @keyframes pulse {
-  0% {
-    box-shadow: 0 0 10px #00ffc8;
-  }
-  50% {
-    box-shadow: 0 0 20px #00ffc8;
-  }
-  100% {
-    box-shadow: 0 0 10px #00ffc8;
-  }
-}
+  0% { box-shadow: 0 0 10px #00ffc8; }
+  50% { box-shadow: 0 0 20px #00ffc8; }
+  100% { box-shadow: 0 0 10px #00ffc8; }
+} 
