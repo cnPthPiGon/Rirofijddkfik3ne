@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, send_from_directory, request
 import requests
 
 app = Flask(__name__)
@@ -8,7 +8,12 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Sert le index.html depuis la racine
+    return send_from_directory('.', 'index.html')
+
+@app.route('/style.css')
+def style():
+    return send_from_directory('.', 'style.css')
 
 @app.route('/send_location', methods=['POST'])
 def send_location():
